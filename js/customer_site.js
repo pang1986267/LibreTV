@@ -1,4 +1,8 @@
 const CUSTOMER_SITES = {
+    suoni: {
+        api:'https://suoniapi.com/api.php/provide/vod/from/',
+        name: '索尼资源站',
+    } 
     qiqi: {
         api: 'https://www.qiqidys.com/api.php/provide/vod',
         name: '七七资源',

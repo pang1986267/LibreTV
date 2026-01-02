@@ -295,6 +295,98 @@
                 }
             });
         });
+        // 添加全屏顶部跑马灯广告遮挡
+        document.addEventListener('DOMContentLoaded', function() {
+    // 获取遮罩层元素
+    const adMask = document.getElementById('videoAdMask');
+    // 保存遮罩层的原始父容器和样式
+    let originalParent = adMask.parentElement;
+    let originalNextSibling = adMask.nextSibling;
+    let isFullscreen = false;
+
+    // 等待 ArtPlayer 初始化
+    function waitForPlayer() {
+        if (window.art && window.art.player) {
+            const artPlayer = window.art.player;
+
+            // 监听全屏事件
+            artPlayer.on('fullscreen', function() {
+                isFullscreen = true;
+                // 找到全屏后的视频容器（ArtPlayer 全屏容器通常类名为 art-player-fullscreen）
+                const fullscreenContainer = document.querySelector('.art-player-fullscreen');
+                if (fullscreenContainer) {
+                    // 将遮罩层移动到全屏容器内
+                    fullscreenContainer.appendChild(adMask);
+                    // 重置遮罩层样式，适配全屏
+                    adMask.style.top = '0';
+                    adMask.style.left = '0';
+                    adMask.style.width = '100%';
+                    adMask.style.height = '40px'; // 全屏下广告高度按比例适配，可根据需要调整
+                    adMask.style.zIndex = '9999'; // 全屏层级更高
+                }
+            });
+
+            // 监听退出全屏事件
+            artPlayer.on('fullscreen_cancel', function() {
+                isFullscreen = false;
+                // 将遮罩层放回原位置
+                if (originalNextSibling) {
+                    originalParent.insertBefore(adMask, originalNextSibling);
+                } else {
+                    originalParent.appendChild(adMask);
+                }
+                // 恢复原有样式
+                adMask.style.zIndex = '999';
+                adMask.style.height = '80px';
+            });
+
+            // 兜底：监听浏览器原生全屏事件（防止 ArtPlayer 事件失效）
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        } else {
+            setTimeout(waitForPlayer, 500); // 未初始化则延迟重试
+        }
+    }
+
+    // 原生全屏事件处理函数
+    function handleFullscreenChange() {
+        const fullscreenElement = document.fullscreenElement || 
+                                 document.webkitFullscreenElement || 
+                                 document.mozFullScreenElement || 
+                                 document.msFullscreenElement;
+        
+        if (fullscreenElement && fullscreenElement.classList.contains('art-player')) {
+            // 进入全屏
+            isFullscreen = true;
+            fullscreenElement.appendChild(adMask);
+            adMask.style.zIndex = '9999';
+        } else if (isFullscreen) {
+            // 退出全屏
+            isFullscreen = false;
+            if (originalNextSibling) {
+                originalParent.insertBefore(adMask, originalNextSibling);
+            } else {
+                originalParent.appendChild(adMask);
+            }
+            adMask.style.zIndex = '999';
+        }
+    }
+
+    // 启动监听
+    waitForPlayer();
+
+    // 额外：保证视频播放时遮罩层始终显示（适配全屏/非全屏）
+    setInterval(function() {
+        if (adMask.style.display === 'none' && !isFullscreen) {
+            adMask.style.display = 'block';
+        } else if (adMask.style.display === 'none' && isFullscreen) {
+            adMask.style.display = 'block';
+        }
+    }, 1000);
+});
     </script>
 </body>
 </html>

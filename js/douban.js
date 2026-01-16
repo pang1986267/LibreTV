@@ -530,18 +530,27 @@ function renderDoubanCards(data, container) {
             
             // 处理图片URL
             // 1. 直接使用豆瓣图片URL (添加no-referrer属性)
-            const originalCoverUrl = item.cover;
+           // 原有数据 const originalCoverUrl = item.cover;
             
             // 2. 也准备代理URL作为备选
-            const proxiedCoverUrl = PROXY_URL + encodeURIComponent(originalCoverUrl);
-            
+           // 原有数据 const proxiedCoverUrl = PROXY_URL + encodeURIComponent(originalCoverUrl);
+            // 新增数据
+            const coverUrl = item.cover || item.pic?.normal || "";
+
+            const imgUrl = coverUrl.includes("doubanio.com")
+              ? `/img?url=${encodeURIComponent(coverUrl)}`
+              : coverUrl;
+
             // 为不同设备优化卡片布局
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${originalCoverUrl}" alt="${safeTitle}" 
+                  // 原有数据 <img src="${originalCoverUrl}" alt="${safeTitle}" 
+                  // 原有数据 class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  // 原有数据 onerror="this.onerror=null; this.src='${proxiedCoverUrl}'; this.classList.add('object-contain');"
+                  // 原有数据 loading="lazy" referrerpolicy="no-referrer">
+                    <img src="${imgUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.onerror=null; this.src='${proxiedCoverUrl}'; this.classList.add('object-contain');"
-                        loading="lazy" referrerpolicy="no-referrer">
+                        loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
                     <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
                         <span class="text-yellow-400">★</span> ${safeRate}

@@ -473,11 +473,10 @@ async function fetchDoubanData(url) {
 
 
 // 抽取渲染豆瓣卡片的逻辑到单独函数
+// 渲染豆瓣卡片
 function renderDoubanCards(data, container) {
-    // 创建文档片段以提高性能
     const fragment = document.createDocumentFragment();
-    
-    // 如果没有数据
+
     if (!data.subjects || data.subjects.length === 0) {
         const emptyEl = document.createElement("div");
         emptyEl.className = "col-span-full text-center py-8";
@@ -486,41 +485,28 @@ function renderDoubanCards(data, container) {
         `;
         fragment.appendChild(emptyEl);
     } else {
-        // 循环创建每个影视卡片
+        // 遍历豆瓣数据中的每一项，创建卡片
         data.subjects.forEach(item => {
             const card = document.createElement("div");
             card.className = "bg-[#111] hover:bg-[#222] transition-all duration-300 rounded-lg overflow-hidden flex flex-col transform hover:scale-105 shadow-md hover:shadow-lg";
-            
-            // 生成卡片内容，确保安全显示（防止XSS）
+
+            // 处理标题和评分
             const safeTitle = item.title
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
-            
+
             const safeRate = (item.rate || "暂无")
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
-            
-            // 处理图片URL
-            // 1. 直接使用豆瓣图片URL (添加no-referrer属性)
-           // 原有数据 const originalCoverUrl = item.cover;
-            
-            // 2. 也准备代理URL作为备选
-           // 原有数据 const proxiedCoverUrl = PROXY_URL + encodeURIComponent(originalCoverUrl);
-            // 新增数据
-            const coverUrl = item.cover || item.pic?.normal || "";
 
-            const imgUrl = coverUrl.includes("doubanio.com")
-              ? `/img?url=${encodeURIComponent(coverUrl)}`
-              : coverUrl;
+            // 处理封面图片URL
+            const coverUrl = item.cover || item.pic?.normal || ""; // 封面图片路径
+            const imgUrl = coverUrl.includes("doubanio.com") ? `/img?url=${encodeURIComponent(coverUrl)}` : coverUrl;
 
-            // 为不同设备优化卡片布局
+            // 更新卡片内容
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                  // 原有数据 <img src="${originalCoverUrl}" alt="${safeTitle}" 
-                  // 原有数据 class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                  // 原有数据 onerror="this.onerror=null; this.src='${proxiedCoverUrl}'; this.classList.add('object-contain');"
-                  // 原有数据 loading="lazy" referrerpolicy="no-referrer">
                     <img src="${imgUrl}" alt="${safeTitle}" 
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                         loading="lazy">
@@ -546,11 +532,12 @@ function renderDoubanCards(data, container) {
             fragment.appendChild(card);
         });
     }
-    
-    // 清空并添加所有新元素
+
+    // 将卡片片段插入容器
     container.innerHTML = "";
     container.appendChild(fragment);
 }
+
 
 // 重置到首页
 function resetToHome() {

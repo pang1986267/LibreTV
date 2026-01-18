@@ -446,15 +446,16 @@ async function fetchDoubanData(url) {
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
     try {
-        // 请求通过 Cloudflare Functions 代理
         const response = await fetch(`/douban?url=${encodeURIComponent(url)}`, {
             signal: controller.signal,
             headers: {
                 'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36', // 伪装成浏览器
+                'Referer': 'https://movie.douban.com/', // 豆瓣的Referer
             },
         });
 
-        clearTimeout(timeoutId);  // 清除超时
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -467,6 +468,7 @@ async function fetchDoubanData(url) {
         throw err; // 向上抛出错误，调用者需要处理
     }
 }
+
 
 
 // 抽取渲染豆瓣卡片的逻辑到单独函数

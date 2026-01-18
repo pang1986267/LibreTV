@@ -435,6 +435,7 @@ function renderRecommend(tag, pageLimit, pageStart) {
             container.innerHTML = `
                 <div class="col-span-full text-center py-8">
                     <div class="text-red-400">❌ 获取豆瓣数据失败，请稍后重试</div>
+                    <div class="text-gray-500 text-sm mt-2">错误信息: ${error.message}</div>
                     <div class="text-gray-500 text-sm mt-2">提示：使用VPN可能有助于解决此问题</div>
                 </div>
             `;
